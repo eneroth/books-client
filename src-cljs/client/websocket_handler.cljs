@@ -33,17 +33,18 @@
             
             ;; All messages are formated automatically. The format is
             ;; {:type :a-type, :content "any content"
-            (let [formated-channel (map> h/record-to-message ws-channel)
-                  formated-channel (map< h/message-to-record formated-channel)]
+            (let [[errors messages] (split #(contains? % :error) ws-channel)
+                  write-to-server   (map> h/record-to-message ws-channel)
+                  read-from-server  (map< h/message-to-record messages)]
               
               ;; Send messages from app-channel to formated-channel
               ;; Let loop die if ws-channel dies
               (go-loop
                 []
                 (when-let [message (<! read-from-client)]
-                  (when (not (h/has-type message (:type h/socket-closed-message)))
+                  (when (not (h/socket-closed-message? message))
                     (do
-                      (>! formated-channel message)
+                      (>! write-to-server message)
                       (recur)))))
               
               ;; Notify meta channel that connection is successfully established
@@ -51,7 +52,7 @@
               
               ;; Message receiver. Dispatches to app-channel.
               (loop []
-                (when-let [message (<! formated-channel)]
+                (when-let [message (<! read-from-server)]
                   (do 
                     (>! write-to-client message)
                     (recur))))

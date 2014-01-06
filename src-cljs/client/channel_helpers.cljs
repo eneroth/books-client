@@ -53,6 +53,10 @@
   (= (keyword type) (:type message)))
 
 
+(defn socket-closed-message?
+  [message]
+  (has-type message (:type socket-closed-message)))
+
 ;; Channel wrangling
 (defn combine-channels [read-ch write-ch]
   (reify
