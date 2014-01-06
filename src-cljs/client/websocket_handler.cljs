@@ -7,7 +7,8 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 ;; Address to host
-(def address "ws://localhost:8080")
+(def address "ws://localhost:5000")
+(def address "ws://tree-mind-tone.herokuapp.com")
 
 (defn open-connection
   "Establishes a loop that maintains a connection to a server.
@@ -22,7 +23,7 @@
         write-channel (chan)
         meta-channel  (chan (sliding-buffer 1))]
     (go 
-      (>! meta-channel h/attempting-connect-message)
+      (>! meta-channel (h/attempting-connect-message address))
       (loop 
         []
         (let [[ws-channel from-channel] (alts! [(ws-ch address) (timeout 500)])]

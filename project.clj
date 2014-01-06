@@ -14,7 +14,7 @@
                  [org.clojure/core.async "0.1.267.0-0d7780-alpha" :scope "provided"]
                  [com.facebook/react "0.8.0.1"]]
   :plugins [[lein-cljsbuild "1.0.1-SNAPSHOT"]]
-  
+  :min-lein-version "2.0.0"
   :cljsbuild {
               :builds {
                        :dev {

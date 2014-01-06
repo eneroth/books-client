@@ -34,9 +34,10 @@
   (Message. :socket-closed
             "Socket closed"))
 
-(def attempting-connect-message
+(defn attempting-connect-message
+  [address]
   (Message. :attempting-connection
-            "Attempting to connect to server"))
+            (str "Attempting to connect to server " address)))
 
 (def connection-successful-message
   (Message. :connection-successful
