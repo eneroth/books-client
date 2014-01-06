@@ -58,7 +58,7 @@
 
               ;; Send termination message to write loop and notify on meta channel
               (>! write-channel h/socket-closed-message)
-              (>! meta-channel (h/attempting-connect-message address))))
+              (>! meta-channel  (h/attempting-connect-message address)))))
         (recur)))
     [(h/combine-channels read-channel write-channel)
      meta-channel]))
