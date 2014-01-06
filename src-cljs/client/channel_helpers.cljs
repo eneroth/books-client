@@ -21,12 +21,15 @@
 (defn message-to-record
   "Takes a raw message from websocket and produces a record."
   [message]
+  (log "Message to convert to record:" message)
+  (js/console.log message)
   (->> message :message read-string (apply ->Message)))
 
 (defn record-to-message
   "Takes a record and produces a string suitable
   for transfer over websocket."
   [record]
+  (log "Record to convert to message: (Message." (pr-str (:type record)) (str (pr-str (:val record)) ")"))
   (-> record vals vec pr-str))
 
 ; Messages

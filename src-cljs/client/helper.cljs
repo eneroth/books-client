@@ -7,5 +7,5 @@
     log-message))
 
 (defn log
-  [string-to-log]
-  (js/console.log string-to-log))
+  [& string-to-log]
+  (js/console.log (apply str (interpose " " string-to-log))))
