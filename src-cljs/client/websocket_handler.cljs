@@ -8,7 +8,7 @@
 
 ;; Address to host
 (def address "ws://localhost:5000")
-(def address "ws://tree-mind-tone.herokuapp.com")
+;(def address "ws://tree-mind-tone.herokuapp.com")
 
 (defn open-connection
   "Establishes a loop that maintains a connection to a server.
@@ -19,8 +19,8 @@
   The second is a meta channel that receives a messages each
   time the channel is either disconnected or connected."
   []
-  (let [read-channel  (chan)
-        write-channel (chan)
+  (let [write-to-client  (chan)
+        read-from-client (chan)
         meta-channel  (chan (sliding-buffer 1))]
     (go 
       (>! meta-channel (h/attempting-connect-message address))
@@ -40,7 +40,7 @@
               ;; Let loop die if ws-channel dies
               (go-loop
                 []
-                (when-let [message (<! write-channel)]
+                (when-let [message (<! read-from-client)]
                   (when (not (h/has-type message (:type h/socket-closed-message)))
                     (do
                       (>! formated-channel message)
@@ -53,12 +53,12 @@
               (loop []
                 (when-let [message (<! formated-channel)]
                   (do 
-                    (>! read-channel message)
+                    (>! write-to-client message)
                     (recur))))
 
               ;; Send termination message to write loop and notify on meta channel
-              (>! write-channel h/socket-closed-message)
+              (>! read-from-client h/socket-closed-message)
               (>! meta-channel  (h/attempting-connect-message address)))))
         (recur)))
-    [(h/combine-channels read-channel write-channel)
+    [(h/combine-channels write-to-client read-from-client)
      meta-channel]))
