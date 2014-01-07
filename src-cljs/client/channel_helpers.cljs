@@ -21,16 +21,23 @@
 (defn message-to-record
   "Takes a raw message from websocket and produces a record."
   [message]
-  (log "Message to convert to record:" message)
-  (js/console.log message)
+  ;(log "Message to convert to record:" message)
+  ;(js/console.log message)
   (->> message :message read-string (apply ->Message)))
 
 (defn record-to-message
   "Takes a record and produces a string suitable
   for transfer over websocket."
   [record]
-  (log "Record to convert to message: (Message." (pr-str (:type record)) (str (pr-str (:val record)) ")"))
+  ;(log "Record to convert to message: (Message." (pr-str (:type record)) (str (pr-str (:val record)) ")"))
   (-> record vals vec pr-str))
+
+(defn error-to-record
+  "Takes a websocket error and converts to a standard message of type error"
+  [error]
+  ;(log "Converting error to message")
+  (js/console.log error)
+  (Message. :error (-> error :error)))
 
 ; Messages
 (def socket-closed-message 
@@ -42,10 +49,14 @@
   (Message. :attempting-connection
             (str "Attempting to connect to server " address)))
 
-(def connection-successful-message
+(defn connection-successful-message
+  [address]
   (Message. :connection-successful
-            "Connection to server successfully established"))
+            (str "Server connection to " address " established!")))
 
+(def request-socket-close
+  (Message. :request-socket-close
+            "Requesting to close websocket channel"))
 
 ;; Type checking
 (defn has-type

@@ -24,6 +24,12 @@
     (om/component
       (html [:div [:button {:id "send"} "Hello world!"]])))
   
+  
+  (defn fake-error-button
+    [state owner]
+    (om/component
+      (html [:div [:button {:id "fake-error"} "Fake an error!"]])))
+  
   (defn search-widget 
     [state owner]
     (om/component
@@ -63,6 +69,7 @@
         [_]
         (html [:div
                (om/build widget state)
+               (om/build fake-error-button state)
                (om/build search-widget state)
                (om/build results-widget state)]))))
   
@@ -79,20 +86,26 @@
                     results)))
 
 ;; Open connection and get channels
-(def server-channels       (websocket-handler/open-connection))
-(def app-channel           (first server-channels))
-(def server-status-channel (second server-channels))
+(def server-channels        (websocket-handler/open-connection))
+(def app-channel            (first server-channels))
+(def server-status-channel  (second server-channels))
+(def command-channel (last server-channels))
 
 ;; Set up event/app loops and channels
 (let [[heartbeat-channel      rest-channel] (split #(h/has-type % :heartbeat)      app-channel)
       [search-results-channel rest-channel] (split #(h/has-type % :search-results) rest-channel)
       clicks-channel                        (h/listen (goog.dom/getElement "send") "click")
+      fake-errors-channel                   (h/listen (goog.dom/getElement "fake-error") "click")
       search-clicks-channel                 (h/listen (goog.dom/getElement "search") "click")]
   
   (go-loop 
     []
     (when-let [message (<! server-status-channel)]
-      (log (str "Connection status: " (:val message)))
+      (cond 
+        (= (:type message) :error) (do 
+                                     (log "Websocket error:" (:val message) "- attempting restart.")
+                                     (>! command-channel h/request-socket-close))
+        :else (log (str "Connection status: " (:val message))))
       (recur)))
   
   (go-loop 
@@ -101,6 +114,14 @@
       (let [message (Message. :info "You clicked a button!")]
         (log (:val message))
         (>! app-channel message)
+        (recur))))
+  
+  (go-loop 
+    []
+    (when-let [click (<! fake-errors-channel)]
+      (let [message (Message. :fake-error "You faked an error!")]
+        (log (:val message))
+        (>! command-channel message)
         (recur))))
   
   (go-loop
