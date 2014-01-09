@@ -89,7 +89,7 @@
 (def server-channels        (websocket-handler/open-connection))
 (def app-channel            (first server-channels))
 (def server-status-channel  (second server-channels))
-(def command-channel (last server-channels))
+(def command-channel        (last server-channels))
 
 ;; Set up event/app loops and channels
 (let [[heartbeat-channel      rest-channel] (split #(h/has-type % :heartbeat)      app-channel)

@@ -8,7 +8,7 @@
 
 ;; Address to host
 (def address "ws://localhost:5000")
-;(def address "ws://tree-mind-tone.herokuapp.com")
+(def address "ws://tree-mind-tone.herokuapp.com")
 
 (defn terminable-channel
   "Creates a message handler that shuts down when 
@@ -55,39 +55,39 @@
       (>! status-channel  (h/attempting-connect-message address))
       
       (loop 
-      []
-      (let [[ws-channel _] (alts! [(ws-ch address) (timeout 500)])]
-        
-        ;; Don't do anything unless we get a socket
-        (when ws-channel
+        []
+        (let [ws-channel (<! (ws-ch address))]
           
-          ;; All messages are formated automatically. The format is
-          ;; {:type :a-type, :content "any content"
-          (let [[ws-errors read-from-server] (split #(contains? % :error) ws-channel)
-                write-to-server ws-channel]
+          ;; Don't do anything unless we get a socket
+          (when ws-channel
             
-            ;; Notify meta channel that connection is successfully established
-            (>! status-channel (h/connection-successful-message address))
-            
-            ;; Message receiver. Dispatches to app-channel.
-            (loop []
-              (let [[message channel] (alts! [read-from-server
-                                              read-from-client
-                                              ws-errors
-                                              command-channel])]
-                (when message 
-                  (condp = channel
-                    read-from-client (>! write-to-server (h/record-to-message message))
-                    read-from-server (>! write-to-client (h/message-to-record message))
-                    ws-errors        (>! status-channel  (h/error-to-record   message))
-                    command-channel  (when (= (:type message)
-                                              (:type h/request-socket-close))
-                                       (close! ws-channel)))
-                  (recur))))
-            
-            ;; Notify of read/write loop termination on meta channel
-            (>! status-channel  (h/attempting-connect-message address)))))
-      (recur)))
+            ;; All messages are formated automatically. The format is
+            ;; {:type :a-type, :content "any content"
+            (let [[ws-errors read-from-server] (split #(contains? % :error) ws-channel)
+                  write-to-server ws-channel]
+              
+              ;; Notify meta channel that connection is successfully established
+              (>! status-channel (h/connection-successful-message address))
+              
+              ;; Message receiver. Dispatches to app-channel.
+              (loop []
+                (let [[message channel] (alts! [read-from-server
+                                                read-from-client
+                                                ws-errors
+                                                command-channel])]
+                  (when message 
+                    (condp = channel
+                      read-from-client (>! write-to-server (h/record-to-message message))
+                      read-from-server (>! write-to-client (h/message-to-record message))
+                      ws-errors        (>! status-channel  (h/error-to-record   message))
+                      command-channel  (when (= (:type message)
+                                                (:type h/request-socket-close))
+                                         (close! ws-channel)))
+                    (recur))))
+              
+              ;; Notify of read/write loop termination on meta channel
+              (>! status-channel  (h/attempting-connect-message address)))))
+        (recur)))
     [(h/combine-channels write-to-client read-from-client)
      status-channel
      command-channel]))
