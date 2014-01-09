@@ -75,8 +75,6 @@
                                               read-from-client
                                               ws-errors
                                               command-channel])]
-                (log "Message:")
-                (js/console.log message)
                 (when message 
                   (condp = channel
                     read-from-client (>! write-to-server (h/record-to-message message))
@@ -84,7 +82,7 @@
                     ws-errors        (>! status-channel  (h/error-to-record   message))
                     command-channel  (when (= (:type message)
                                               (:type h/request-socket-close))
-                                       (close! ws-ch)))
+                                       (close! ws-channel)))
                   (recur))))
             
             ;; Notify of read/write loop termination on meta channel

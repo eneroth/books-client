@@ -8,6 +8,7 @@
                  [http-kit "2.1.13"]
                  [om "0.1.4"]
                  [sablono "0.1.3"]
+                 [garden "1.1.4"]
                  [org.clojure/data.fressian "0.2.0"]
                  [jarohen/chord "0.2.2"]
                  [org.clojure/clojurescript "0.0-2138" :scope "provided"]

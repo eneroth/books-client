@@ -103,7 +103,7 @@
     (when-let [message (<! server-status-channel)]
       (cond 
         (= (:type message) :error) (do 
-                                     (log "Websocket error:" (:val message) "- attempting restart.")
+                                     (log "Websocket error:" (or (:val message) "Unknown") "- attempting restart.")
                                      (>! command-channel h/request-socket-close))
         :else (log (str "Connection status: " (:val message))))
       (recur)))
@@ -119,17 +119,30 @@
   (go-loop 
     []
     (when-let [click (<! fake-errors-channel)]
-      (let [message (Message. :fake-error "You faked an error!")]
+      (let [message (Message. :error "You faked an error!")]
         (log (:val message))
         (>! command-channel message)
         (recur))))
   
+  
+  ;; Heartbeats
+  ; Receiver
   (go-loop
     []
     (when-let [heartbeat (<! heartbeat-channel)]
-      (js/console.log "Received heartbeat")
+      (js/console.log "Received server heartbeat")
       (recur)))
   
+  ; Sender
+  (go-loop
+    []
+    (<! (timeout 55000))
+    (log "Sending client heartbeat")
+    (>! app-channel (Message. :heartbeat "Client heartbeat"))
+    (recur))
+  
+  
+  ;; Search
   (go-loop
     []
     (when-let [click (<! search-clicks-channel)]
