@@ -6,7 +6,7 @@
             [om.dom :as dom :include-macros true]
             [goog.dom]
             [goog.events :as events]
-            [cljs.core.async :refer [split <! >! put! chan timeout sliding-buffer]]
+            [cljs.core.async :refer [split <! >! alts! put! admix mix chan timeout sliding-buffer]]
             [sablono.core :as html :refer [html] :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
@@ -33,8 +33,9 @@
   (defn search-widget 
     [state owner]
     (om/component
-      (html [:div [:button {:id "search"} "Search"]
-             [:input {:id "search-box" :placeholder "Search for a book"}]])))
+      (html [:div {:id "search-box"} 
+             [:input {:id "search-field" :placeholder "Search for a book"}]
+             [:button {:id "search"} "Search"]])))
   
   
   (defn search-item
@@ -68,8 +69,8 @@
       (render 
         [_]
         (html [:div
-               (om/build widget state)
-               (om/build fake-error-button state)
+               ;(om/build widget state)
+               ;(om/build fake-error-button state)
                (om/build search-widget state)
                (om/build results-widget state)]))))
   
@@ -92,11 +93,13 @@
 (def command-channel        (last server-channels))
 
 ;; Set up event/app loops and channels
+
 (let [[heartbeat-channel      rest-channel] (split #(h/has-type % :heartbeat)      app-channel)
       [search-results-channel rest-channel] (split #(h/has-type % :search-results) rest-channel)
-      clicks-channel                        (h/listen (goog.dom/getElement "send") "click")
-      fake-errors-channel                   (h/listen (goog.dom/getElement "fake-error") "click")
-      search-clicks-channel                 (h/listen (goog.dom/getElement "search") "click")]
+      ;clicks-channel                        (h/listen (goog.dom/getElement "send") "click")
+      ;fake-errors-channel                   (h/listen (goog.dom/getElement "fake-error") "click")
+      search-init-events                    (h/clean-mix (h/listen (goog.dom/getElement "search") "click")
+                                                         (h/listen (goog.dom/getElement "search-field") "keyup"))]
   
   (go-loop 
     []
@@ -108,21 +111,22 @@
         :else (log (str "Connection status: " (:val message))))
       (recur)))
   
-  (go-loop 
-    []
-    (when-let [click (<! clicks-channel)]
-      (let [message (Message. :info "You clicked a button!")]
-        (log (:val message))
-        (>! app-channel message)
-        (recur))))
-  
-  (go-loop 
-    []
-    (when-let [click (<! fake-errors-channel)]
-      (let [message (Message. :error "You faked an error!")]
-        (log (:val message))
-        (>! command-channel message)
-        (recur))))
+  (comment 
+    (go-loop 
+      []
+      (when-let [click (<! clicks-channel)]
+        (let [message (Message. :info "You clicked a button!")]
+          (log (:val message))
+          (>! app-channel message)
+          (recur))))
+    
+    (go-loop 
+      []
+      (when-let [click (<! fake-errors-channel)]
+        (let [message (Message. :error "You faked an error!")]
+          (log (:val message))
+          (>! command-channel message)
+          (recur)))))
   
   
   ;; Heartbeats
@@ -145,10 +149,11 @@
   ;; Search
   (go-loop
     []
-    (when-let [click (<! search-clicks-channel)]
-      (let [value (.-value (goog.dom/getElement "search-box"))
-            message (Message. :search value)]
-        (>! app-channel message))
+    (when-let [search-init-event (<! search-init-events)]
+      (when (h/pressed-key-is? (:enter h/key-types) search-init-event)
+        (let [value (.-value (goog.dom/getElement "search-field"))
+              message (Message. :search value)]
+          (>! app-channel message)))
       (recur)))
   
   (go-loop

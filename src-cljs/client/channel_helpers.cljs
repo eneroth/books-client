@@ -1,9 +1,10 @@
 (ns client.channel-helpers
   (:require [cljs.core.async.impl.protocols :as p]
             [client.helper :refer [log]]
-            [cljs.core.async :refer [chan put!]]
+            [cljs.core.async :refer [chan put! >! alts! admix mix]]
             [goog.events :as events]
-            [cljs.reader :refer [read-string]]))
+            [cljs.reader :refer [read-string]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 ;; DOM listening as a channel
 (defn listen [element type]
@@ -13,6 +14,15 @@
     (events/listen element type
                    (fn [e] (put! out e)))
     out))
+
+;; Keypresses
+(def key-types {:enter 13})
+
+(defn pressed-key-is?
+  [key-type event]
+  (= (.-keyCode event)
+     key-type))
+
 
 ;; Message formatting
 (defrecord Message [type val])
@@ -61,7 +71,8 @@
 ;; Type checking
 (defn has-type
   [message type]
-  (= (keyword type) (:type message)))
+  (= (keyword type) 
+     (:type message)))
 
 
 (defn socket-closed-message?
@@ -69,6 +80,30 @@
   (has-type message (:type socket-closed-message)))
 
 ;; Channel wrangling
+
+(defn clean-mix
+  "Takes any number of channels and puts any message from any
+  of them on the returned channel."
+  [& channels]
+  (let [out-chan (chan)]
+    (go-loop
+      []
+      (let [[message channel] (alts! channels)]
+        (when message
+          (>! out-chan message)
+          (recur))))
+    out-chan))
+
+(comment 
+  (defn clean-mix
+    "Takes any number of channels and puts any message from any
+    of them on the returned channel."
+    [& channels]
+    (go
+      (let [the-mix (mix (chan))]
+        (map (partial admix the-mix) channels)
+        the-mix))))
+
 (defn combine-channels [read-ch write-ch]
   (reify
     p/ReadPort

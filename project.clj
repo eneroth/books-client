@@ -14,7 +14,8 @@
                  [org.clojure/clojurescript "0.0-2138" :scope "provided"]
                  [org.clojure/core.async "0.1.267.0-0d7780-alpha" :scope "provided"]
                  [com.facebook/react "0.8.0.1"]]
-  :plugins [[lein-cljsbuild "1.0.1-SNAPSHOT"]]
+  :plugins [[lein-cljsbuild "1.0.1-SNAPSHOT"]
+            [lein-garden "0.1.0"]]
   :min-lein-version "2.0.0"
   :cljsbuild {
               :builds {
@@ -24,5 +25,13 @@
                                         :output-dir "resources/public/js/output"
                                         :optimizations :none
                                         :pretty-print true
-                                        :source-map "resources/public/js/output/cljs.js.map"}}}})
-
+                                        :source-map "resources/public/js/output/cljs.js.map"}}}}
+  :garden {:builds [{;; Optional name of the build.
+                     :id "screen"
+                     ;; The var containing your stylesheet.
+                     :stylesheet client.stylesheets.screen/screen
+                     ;; Compiler flags passed to `garden.core/css`
+                     :compiler {;; Where to save the file.
+                                :output-to "resources/public/css/screen.css"
+                                ;; Compress the output?
+                                :pretty-print? false}}]})
