@@ -15,7 +15,12 @@
                    (fn [e] (put! out e)))
     out))
 
-;; Keypresses
+;; Event parsing
+(defn has-event-type?
+  [event-type event]
+  (= (keyword (.-type event))
+     event-type))
+
 (def key-types {:enter 13})
 
 (defn pressed-key-is?

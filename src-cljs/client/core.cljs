@@ -152,11 +152,16 @@
     (go-loop
       []
       (when-let [search-init-event (<! search-init-events)]
-        (when (h/pressed-key-is? (:enter h/key-types) search-init-event)
-          (let [value (.-value (goog.dom/getElement "search-field"))
-                message (Message. :search value)]
-            (>! app-channel message)))
-        (recur)))
+        (let [is-button-click? (h/has-event-type? :click search-init-event)
+              is-key-press-up? (h/has-event-type? :keyup search-init-event)
+              is-enter-key?    (h/pressed-key-is? (:enter h/key-types) search-init-event)]
+          (when (or is-button-click?
+                    (and is-key-press-up?
+                         is-enter-key?))
+            (let [value (.-value (goog.dom/getElement "search-field"))
+                  message (Message. :search value)]
+              (>! app-channel message)))
+          (recur))))
     
     (go-loop
       []
