@@ -18,14 +18,18 @@
             [lein-garden "0.1.0"]]
   :min-lein-version "2.0.0"
   :cljsbuild {
-              :builds {
-                       :dev {
-                             :source-paths ["src-cljs"]
-                             :compiler {:output-to "resources/public/js/output/cljs.js"
-                                        :output-dir "resources/public/js/output"
-                                        :optimizations :none
-                                        :pretty-print true
-                                        :source-map "resources/public/js/output/cljs.js.map"}}}}
+              :builds [{:id "dev"
+                        :source-paths ["src-cljs"]
+                        :compiler {:output-to "resources/public/js/output/cljs.js"
+                                   :output-dir "resources/public/js/output"
+                                   :optimizations :none
+                                   :pretty-print true
+                                   :source-map "resources/public/js/output/cljs.js.map"}}
+                       {:id "prod"
+                        :source-paths ["src-cljs"]
+                        :compiler {:output-to "../nginx/html/js/cljs.js"
+                                   :optimizations :simple
+                                   :pretty-print true}}]}
   :garden {:builds [{;; Optional name of the build.
                      :id "screen"
                      ;; The var containing your stylesheet.

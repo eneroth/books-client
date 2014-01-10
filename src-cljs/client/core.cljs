@@ -35,20 +35,20 @@
     (om/component
       (html [:div {:id "search-box"} 
              [:input {:id "search-field" :placeholder "Search for a book"}]
-             [:button {:id "search"} "Search"]])))
+             [:button {:id "search"} "Go!"]])))
   
   
   (defn search-item
     [item owner]
     (om/component 
       (html 
-        [:li (:val item)])))
+        [:li {:id "search-result"}(:val item)])))
   
   (defn results-widget
     [state owner]
     (let [search-results (:search-results state)]
       (om/component
-        (html [:ul 
+        (html [:ul {:id "search-results"}
                (om/build-all search-item (:search-results state) {:key :id})]))))
   
   
@@ -94,74 +94,78 @@
 
 ;; Set up event/app loops and channels
 
-(let [[heartbeat-channel      rest-channel] (split #(h/has-type % :heartbeat)      app-channel)
-      [search-results-channel rest-channel] (split #(h/has-type % :search-results) rest-channel)
-      ;clicks-channel                        (h/listen (goog.dom/getElement "send") "click")
-      ;fake-errors-channel                   (h/listen (goog.dom/getElement "fake-error") "click")
-      search-init-events                    (h/clean-mix (h/listen (goog.dom/getElement "search") "click")
-                                                         (h/listen (goog.dom/getElement "search-field") "keyup"))]
-  
-  (go-loop 
-    []
-    (when-let [message (<! server-status-channel)]
-      (cond 
-        (= (:type message) :error) (do 
-                                     (log "Websocket error:" (or (:val message) "Unknown") "- attempting restart.")
-                                     (>! command-channel h/request-socket-close))
-        :else (log (str "Connection status: " (:val message))))
-      (recur)))
-  
-  (comment 
-    (go-loop 
-      []
-      (when-let [click (<! clicks-channel)]
-        (let [message (Message. :info "You clicked a button!")]
-          (log (:val message))
-          (>! app-channel message)
-          (recur))))
+(defn run
+  []
+  (let [[heartbeat-channel      rest-channel] (split #(h/has-type % :heartbeat)      app-channel)
+        [search-results-channel rest-channel] (split #(h/has-type % :search-results) rest-channel)
+        ;clicks-channel                        (h/listen (goog.dom/getElement "send") "click")
+        ;fake-errors-channel                   (h/listen (goog.dom/getElement "fake-error") "click")
+        search-init-events                    (h/clean-mix (h/listen (goog.dom/getElement "search") "click")
+                                                           (h/listen (goog.dom/getElement "search-field") "keyup"))]
     
     (go-loop 
       []
-      (when-let [click (<! fake-errors-channel)]
-        (let [message (Message. :error "You faked an error!")]
-          (log (:val message))
-          (>! command-channel message)
-          (recur)))))
-  
-  
-  ;; Heartbeats
-  ; Receiver
-  (go-loop
-    []
-    (when-let [heartbeat (<! heartbeat-channel)]
-      (js/console.log "Received server heartbeat")
-      (recur)))
-  
-  ; Sender
-  (go-loop
-    []
-    (<! (timeout 55000))
-    (log "Sending client heartbeat")
-    (>! app-channel (Message. :heartbeat "Client heartbeat"))
-    (recur))
-  
-  
-  ;; Search
-  (go-loop
-    []
-    (when-let [search-init-event (<! search-init-events)]
-      (when (h/pressed-key-is? (:enter h/key-types) search-init-event)
-        (let [value (.-value (goog.dom/getElement "search-field"))
-              message (Message. :search value)]
-          (>! app-channel message)))
-      (recur)))
-  
-  (go-loop
-    []
-    (when-let [search-results (:val (<! search-results-channel))]
-      (let [message (Message. :update-search-results (index-vec search-results))]
-        (log "Received search results!")
-        (log (pr-str search-results))
-        (>! om-channel message)
-        (recur)))))
+      (when-let [message (<! server-status-channel)]
+        (cond 
+          (= (:type message) :error) (do 
+                                       (log "Websocket error:" (or (:val message) "Unknown") "- attempting restart.")
+                                       (>! command-channel h/request-socket-close))
+          :else (log (str "Connection status: " (:val message))))
+        (recur)))
+    
+    (comment 
+      (go-loop 
+        []
+        (when-let [click (<! clicks-channel)]
+          (let [message (Message. :info "You clicked a button!")]
+            (log (:val message))
+            (>! app-channel message)
+            (recur))))
+      
+      (go-loop 
+        []
+        (when-let [click (<! fake-errors-channel)]
+          (let [message (Message. :error "You faked an error!")]
+            (log (:val message))
+            (>! command-channel message)
+            (recur)))))
+    
+    
+    ;; Heartbeats
+    ; Receiver
+    (go-loop
+      []
+      (when-let [heartbeat (<! heartbeat-channel)]
+        (js/console.log "Received server heartbeat")
+        (recur)))
+    
+    ; Sender
+    (go-loop
+      []
+      (<! (timeout 55000))
+      (log "Sending client heartbeat")
+      (>! app-channel (Message. :heartbeat "Client heartbeat"))
+      (recur))
+    
+    
+    ;; Search
+    (go-loop
+      []
+      (when-let [search-init-event (<! search-init-events)]
+        (when (h/pressed-key-is? (:enter h/key-types) search-init-event)
+          (let [value (.-value (goog.dom/getElement "search-field"))
+                message (Message. :search value)]
+            (>! app-channel message)))
+        (recur)))
+    
+    (go-loop
+      []
+      (when-let [search-results (:val (<! search-results-channel))]
+        (let [message (Message. :update-search-results (index-vec search-results))]
+          (log "Received search results!")
+          (log (pr-str search-results))
+          (>! om-channel message)
+          (recur))))))
 
+(defn ^export main []
+  (run))
