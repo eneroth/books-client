@@ -1,7 +1,9 @@
 (ns client.stylesheets.screen
   (:require [garden.def :refer [defstylesheet defstyles defrule]]
+            [garden.core :refer [css]]
             [garden.units :refer [px]]
-            [garden.color :as color :refer [hsl rgb rgba]]))
+            [garden.color :as color :refer [hsl rgb rgba]]
+            [client.helper :as h]))
 
 
 (def blue (rgb 1 88 155))
@@ -17,8 +19,10 @@
 (def orange (rgb 204 126 109))
 
 
-(defstyles screen
-  {:vendors ["webkit" "moz" "o" "ie"]}
+(css
+  
+  {:vendors ["webkit" "moz" "o" "ms"]
+   :output-to "resources/public/css/screen.css"}
   
   [:input  {:outline "none"}]
   
@@ -26,8 +30,7 @@
   
   [:body {:font-family "sans-serif"
           :background {:color gray}
-          :font-size (px 16)
-          :line-height 1.5}
+          :font-size (px 16)}
    
    [:ul#search-results 
     {:list-style "none"
@@ -60,19 +63,24 @@
       :overflow "hidden"
       :padding 0
       :display "flex"
-      :align-items "stretch"
-      :justify-content "flex-end"
       :background {:color "white"}
       :border {:radius (px 4)}}
-     ^:prefix {:box {:shadow "3px 3px 0px 0px rgba(0,0,0,0.45)"}}
+     ^:prefix {:align-items "stretch"
+               :justify-content "flex-end"
+               :box {:shadow "3px 3px 0px 0px rgba(0,0,0,0.45)"}}
      
      [:input#search-field 
       {:border "none"
-       :flex-grow 1
        :background "none"
        :margin {:left (px 5)}
-       :font {:size (px 22)}}]]]])
+       :font {:size (px 22)}}
+      ^:prefix {:flex-grow 1}]]]])
 
+
+
+(defn -main
+  [& args]
+  (h/start-nstracker))
 
 
 

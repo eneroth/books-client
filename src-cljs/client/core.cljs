@@ -174,5 +174,5 @@
           (>! om-channel message)
           (recur))))))
 
-(defn ^export main []
+(defn ^:export main []
   (run))

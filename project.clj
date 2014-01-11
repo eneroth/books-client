@@ -13,23 +13,25 @@
                  [jarohen/chord "0.2.2"]
                  [org.clojure/clojurescript "0.0-2138" :scope "provided"]
                  [org.clojure/core.async "0.1.267.0-0d7780-alpha" :scope "provided"]
-                 [com.facebook/react "0.8.0.1"]]
+                 [com.facebook/react "0.8.0.1"]
+                 [ns-tracker "0.2.1"]]
   :plugins [[lein-cljsbuild "1.0.1-SNAPSHOT"]
             [lein-garden "0.1.0"]]
   :min-lein-version "2.0.0"
+  :main client.stylesheets.screen
   :cljsbuild {
               :builds [{:id "dev"
                         :source-paths ["src-cljs"]
                         :compiler {:output-to "resources/public/js/output/cljs.js"
-                                   :output-dir "resources/public/js/output"
                                    :optimizations :none
                                    :pretty-print true
                                    :source-map "resources/public/js/output/cljs.js.map"}}
                        {:id "prod"
                         :source-paths ["src-cljs"]
                         :compiler {:output-to "../nginx/html/js/cljs.js"
-                                   :optimizations :simple
-                                   :pretty-print true}}]}
+                                   :optimizations :advanced
+                                   :externs ["resources/public/js/react-0.8.0.min.js"]
+                                   :pretty-print false}}]}
   :garden {:builds [{;; Optional name of the build.
                      :id "screen"
                      ;; The var containing your stylesheet.

@@ -70,3 +70,4 @@ w
 (has-type {:type :heartbeat} :heartbea)
 (has-type {} :heartbeat)
 exit
+(-main)
