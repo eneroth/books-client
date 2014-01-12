@@ -7,8 +7,9 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 ;; Address to host
-(def servers-addresses #{"ws://localhost:5000"
-                         "ws://tree-mind-tone.herokuapp.com"})
+(def servers-addresses ["ws://localhost:5000"
+                        "ws://books-server.herokuapp.com"
+                        "ws://tree-mind-tone.herokuapp.com"])
 
 (defn get-connection-supply-channels
   "Returns a vector of tuples, one for every
@@ -18,12 +19,33 @@
   return a websocket-channel, when the websocket-
   channel to the server in question is ready." 
   [ws-addresses]
-  (reduce #(assoc %1 (ws-ch %2) %2) {} ws-addresses))
+  (doall 
+    (reduce #(assoc %1 (ws-ch %2) %2) {} ws-addresses)))
 
 (defn close-all!
   "Closes all channels in list"
   [channels]
-  (map close! channels))
+  (doall 
+    (map close! channels)))
+
+(defn close-channel-and-resultant!
+  "Takes a channel that is expected to return a channel.
+  Closes the channel that is expected, if such a channel
+  is returned within a second, and closes it.
+  Regardless, it then closes the channel supplied."
+  [channel]
+  (go 
+    (let [[ws-channel _] (alts! [(timeout 1000)
+                                 channel])]
+      (when ws-channel
+        (close! ws-channel))
+      (close! channel)))
+  nil)
+
+(defn close-resultant-channels!
+  [channels]
+  (doall 
+    (map close-channel-and-resultant! channels)))
 
 (defn terminable-channel
   "Creates a message handler that shuts down when 
@@ -79,8 +101,9 @@
         ;; Don't do anything unless we get a socket
         (when ws-channel
           ;; Close all channels which were not used
-          (let [unused-channels (remove #{successful-channel} connection-channels)]
-            (close-all! unused-channels))
+          (let [unused-channels (vec (remove #{successful-channel} connection-channels))]
+            ;(js/console.log unused-channels)
+            (close-resultant-channels! unused-channels))
           
           ;; All messages are formated automatically. The format is
           ;; {:type :a-type, :content "any content"
@@ -107,7 +130,7 @@
                   (recur))))
             
             ;; Notify of read/write loop termination on meta channel
-            (>! status-channel  (h/connection-closed address)))))
+            (>! status-channel  (h/connection-closed-message address)))))
       (recur))
     [(h/combine-channels write-to-client read-from-client)
      status-channel
