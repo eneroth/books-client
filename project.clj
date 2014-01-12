@@ -24,6 +24,7 @@
                         :source-paths ["src-cljs"]
                         :compiler {:output-to "resources/public/js/output/cljs.js"
                                    :optimizations :none
+                                   :output-dir "resources/public/js/output"
                                    :pretty-print true
                                    :source-map "resources/public/js/output/cljs.js.map"}}
                        {:id "prod"

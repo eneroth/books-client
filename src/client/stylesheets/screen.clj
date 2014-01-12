@@ -19,10 +19,16 @@
 (def orange (rgb 204 126 109))
 
 
+;; Flex mixin
+(def flex-mixin
+  #{:flex :-webkit-flex :-moz-flex :-ms-flex :-o-flex})
+
+
 (css
   
   {:vendors ["webkit" "moz" "o" "ms"]
-   :output-to "resources/public/css/screen.css"}
+   :output-to "resources/public/css/screen.css"
+   :pretty-print? true}
   
   [:input  {:outline "none"}]
   
@@ -46,23 +52,17 @@
      :margin {:left  "auto"
               :right "auto"}
      :padding (px 20)}
-    [:button#search 
-     {:height (px 40)
-      :width (px 80)
-      :padding 0
-      :margin 0
-      :color gray
-      :background {:color orange}
-      :font {:size (px 22)}
-      :border {:style "none"}}]
+    
+
     
     [:div#search-box 
      {:max-width (px 400)
+      :height "auto"
       :margin {:left "auto"
                :right "auto"}
       :overflow "hidden"
       :padding 0
-      :display "flex"
+      :display flex-mixin
       :background {:color "white"}
       :border {:radius (px 4)}}
      ^:prefix {:align-items "stretch"
@@ -71,10 +71,27 @@
      
      [:input#search-field 
       {:border "none"
-       :background "none"
-       :margin {:left (px 5)}
+       :background {:color "none"}
+       :margin {:left   0
+                :right  0
+                :bottom 0
+                :top    0}
+       :padding {:left   (px 10)
+                :right  0
+                :bottom 0
+                :top    (px 0)}
        :font {:size (px 22)}}
-      ^:prefix {:flex-grow 1}]]]])
+      ^:prefix {:flex-grow 1}]
+     
+     [:button#search 
+      {:height (px 40)
+       :width (px 64)
+       :padding 0
+       :margin 0
+       :color gray
+       :background {:color orange}
+       :font {:size (px 22)}
+       :border {:style "none"}}]]]])
 
 
 

@@ -71,3 +71,11 @@ w
 (has-type {} :heartbeat)
 exit
 (-main)
+(start-nstracker)
+(-main)
+exit
+(-main)
+(pop [1 2] 2)
+(remove 2 [1 2])
+(remove #{2} [1 2])
+exit

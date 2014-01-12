@@ -30,26 +30,20 @@ body div#app {
   max-width: 400px;
 }
 
-body div#app button#search {
-  border-style: none;
-  background-color: #cc7e6d;
-  height: 40px;
-  width: 80px;
-  padding: 0;
-  margin: 0;
-  color: #2f2933;
-  font-size: 22px;
-}
-
 body div#app div#search-box {
-  border-radius: 4px;
-  display: flex;
-  padding: 0;
-  overflow: hidden;
-  margin-left: auto;
   margin-right: auto;
   max-width: 400px;
+  border-radius: 4px;
+  padding: 0;
+  height: auto;
+  margin-left: auto;
   background-color: white;
+  display: -webkit-flex;
+  display: flex;
+  display: -moz-flex;
+  display: -o-flex;
+  display: -ms-flex;
+  overflow: hidden;
   -webkit-box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.45);
   -moz-box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.45);
   -o-box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.45);
@@ -68,13 +62,31 @@ body div#app div#search-box {
 }
 
 body div#app div#search-box input#search-field {
-  font-size: 22px;
-  background: none;
+  padding-right: 0;
+  padding-left: 10px;
+  background-color: none;
+  margin-left: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
   border: none;
-  margin-left: 5px;
+  margin-top: 0;
+  padding-top: 0px;
+  margin-right: 0;
+  font-size: 22px;
   -webkit-flex-grow: 1;
   -moz-flex-grow: 1;
   -o-flex-grow: 1;
   -ms-flex-grow: 1;
   flex-grow: 1;
+}
+
+body div#app div#search-box button#search {
+  border-style: none;
+  background-color: #cc7e6d;
+  height: 40px;
+  width: 64px;
+  padding: 0;
+  margin: 0;
+  color: #2f2933;
+  font-size: 22px;
 }

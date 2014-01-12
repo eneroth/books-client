@@ -33,7 +33,7 @@
   (defn search-widget 
     [state owner]
     (om/component
-      (html [:div {:id "search-box"} 
+      (html [:div {:id "search-box"}
              [:input {:id "search-field" :placeholder "Search for a book"}]
              [:button {:id "search"} "Go!"]])))
   

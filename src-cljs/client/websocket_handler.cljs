@@ -7,8 +7,23 @@
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 ;; Address to host
-(def address "ws://localhost:5000")
-(def address "ws://tree-mind-tone.herokuapp.com")
+(def servers-addresses #{"ws://localhost:5000"
+                         "ws://tree-mind-tone.herokuapp.com"})
+
+(defn get-connection-supply-channels
+  "Returns a vector of tuples, one for every
+  address in the list supplied to the function.
+  Every tuple is of format [address channel].
+  Taking from the channel in the tuple will  
+  return a websocket-channel, when the websocket-
+  channel to the server in question is ready." 
+  [ws-addresses]
+  (reduce #(assoc %1 (ws-ch %2) %2) {} ws-addresses))
+
+(defn close-all!
+  "Closes all channels in list"
+  [channels]
+  (map close! channels))
 
 (defn terminable-channel
   "Creates a message handler that shuts down when 
@@ -50,44 +65,50 @@
         read-from-client (chan)
         status-channel   (chan (sliding-buffer 1))
         command-channel  (chan)]
-    (go 
-      ;; Send initial "trying to connect" message
-      (>! status-channel  (h/attempting-connect-message address))
+    (go-loop 
+      []
+      ;; Send "trying to connect" message
+      (>! status-channel  (h/attempting-connect-message servers-addresses))
       
-      (loop 
-        []
-        (let [ws-channel (<! (ws-ch address))]
+      (let [channels-and-addresses           (get-connection-supply-channels servers-addresses)
+            connection-channels              (keys channels-and-addresses)
+            connection-addresses             (vals channels-and-addresses)
+            [ws-channel successful-channel]  (alts! connection-channels {:priority true}) 
+            address                          (get channels-and-addresses successful-channel)]
+        
+        ;; Don't do anything unless we get a socket
+        (when ws-channel
+          ;; Close all channels which were not used
+          (let [unused-channels (remove #{successful-channel} connection-channels)]
+            (close-all! unused-channels))
           
-          ;; Don't do anything unless we get a socket
-          (when ws-channel
+          ;; All messages are formated automatically. The format is
+          ;; {:type :a-type, :content "any content"
+          (let [[ws-errors read-from-server] (split #(contains? % :error) ws-channel)
+                write-to-server ws-channel]
             
-            ;; All messages are formated automatically. The format is
-            ;; {:type :a-type, :content "any content"
-            (let [[ws-errors read-from-server] (split #(contains? % :error) ws-channel)
-                  write-to-server ws-channel]
-              
-              ;; Notify meta channel that connection is successfully established
-              (>! status-channel (h/connection-successful-message address))
-              
-              ;; Message receiver. Dispatches to app-channel.
-              (loop []
-                (let [[message channel] (alts! [read-from-server
-                                                read-from-client
-                                                ws-errors
-                                                command-channel])]
-                  (when message 
-                    (condp = channel
-                      read-from-client (>! write-to-server (h/record-to-message message))
-                      read-from-server (>! write-to-client (h/message-to-record message))
-                      ws-errors        (>! status-channel  (h/error-to-record   message))
-                      command-channel  (when (= (:type message)
-                                                (:type h/request-socket-close))
-                                         (close! ws-channel)))
-                    (recur))))
-              
-              ;; Notify of read/write loop termination on meta channel
-              (>! status-channel  (h/attempting-connect-message address)))))
-        (recur)))
+            ;; Notify meta channel that connection is successfully established
+            (>! status-channel (h/connection-successful-message address))
+            
+            ;; Message receiver. Dispatches to app-channel.
+            (loop []
+              (let [[message channel] (alts! [read-from-server
+                                              read-from-client
+                                              ws-errors
+                                              command-channel])]
+                (when message 
+                  (condp = channel
+                    read-from-client (>! write-to-server (h/record-to-message message))
+                    read-from-server (>! write-to-client (h/message-to-record message))
+                    ws-errors        (>! status-channel  (h/error-to-record   message))
+                    command-channel  (when (= (:type message)
+                                              (:type h/request-socket-close))
+                                       (close! ws-channel)))
+                  (recur))))
+            
+            ;; Notify of read/write loop termination on meta channel
+            (>! status-channel  (h/connection-closed address)))))
+      (recur))
     [(h/combine-channels write-to-client read-from-client)
      status-channel
      command-channel]))
