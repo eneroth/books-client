@@ -1,7 +1,7 @@
 (ns client.core
   (:require [client.websocket-handler :as websocket-handler]
             [client.channel-helpers :as h :refer [Message]]
-            [client.helper :refer [log]]
+            [client.helper :refer [log interpose-authors]]
             [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]
             [goog.dom]
@@ -41,8 +41,13 @@
   (defn search-item
     [item owner]
     (om/component 
-      (html 
-        [:li {:id "search-result"}(:val item)])))
+      (let [title   (:title item)
+            url     (:url item)
+            authors (apply str (interpose ", " (:author item)))]
+        (html 
+          [:li#search-result
+           [:a#book-amazon-link.hyphenate {:href url} title]
+           [:div#authors authors]]))))
   
   (defn results-widget
     [state owner]
@@ -61,7 +66,7 @@
         (go-loop
           []
           (when-let [search-results (:val (<! search-results-ch))] 
-            (log (pr-str search-results))
+            ;(log (pr-str search-results))
             (om/update! state assoc :search-results search-results)
             (recur))))
       
@@ -85,6 +90,14 @@
   (vec (map-indexed (fn [idx value] 
                       {:id idx :val value}) 
                     results)))
+
+(defn add-ids
+  "Adds a sequential ID to each element
+  in a vector of maps."
+  [vec-of-maps]
+  (vec (map-indexed (fn [idx in-map]
+                      (assoc in-map :id idx))
+                    vec-of-maps)))
 
 ;; Open connection and get channels
 (def server-channels        (websocket-handler/open-connection))
@@ -158,19 +171,20 @@
               value            (.-value (goog.dom/getElement "search-field"))
               value-not-empty? (not (= value ""))
               message          (Message. :search value)]
-          (when (and value-not-empty?
-                     (or is-button-click?
-                         (and is-key-press-up?
-                              is-enter-key?)))                  
+          (when 
+            (and value-not-empty?
+                 (or is-button-click?
+                     (and is-key-press-up?
+                          is-enter-key?)))                  
             (>! app-channel message))
           (recur))))
     
     (go-loop
       []
       (when-let [search-results (:val (<! search-results-channel))]
-        (let [message (Message. :update-search-results (index-vec search-results))]
+        (let [message (Message. :update-search-results (add-ids search-results))]
           (log "Received search results!")
-          (log (pr-str search-results))
+          ;(log (pr-str search-results))
           (>! om-channel message)
           (recur))))))
 

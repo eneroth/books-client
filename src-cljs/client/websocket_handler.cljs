@@ -1,7 +1,7 @@
 (ns client.websocket-handler
   (:require [client.channel-helpers :as h :refer [Message]]
             [client.helper :refer [log log-message-formater]]
-            [chord.client :refer [ws-ch]]
+            [client.chord :refer [ws-ch]]
             [cljs.reader :refer [read-string]]
             [cljs.core.async :refer [close! split <! >! map> map< filter< put! close! alts! chan timeout sliding-buffer]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
@@ -20,7 +20,10 @@
   channel to the server in question is ready." 
   [ws-addresses]
   (doall 
-    (reduce #(assoc %1 (ws-ch %2) %2) {} ws-addresses)))
+    (reduce #(let [read-channel   (chan)
+                   supply-channel (ws-ch %2 {:read-ch read-channel})]
+               (assoc %1 
+                 supply-channel [%2 read-channel])) {} ws-addresses)))
 
 (defn close-all!
   "Closes all channels in list"
@@ -83,20 +86,27 @@
   The second is a meta channel that receives a messages each
   time the channel is either disconnected or connected."
   []
-  (let [write-to-client  (chan)
-        read-from-client (chan)
-        status-channel   (chan (sliding-buffer 1))
-        command-channel  (chan)]
+  (let [write-to-app    (chan)
+        read-from-app   (chan)
+        status-channel  (chan (sliding-buffer 1))
+        command-channel (chan)]
     (go-loop 
       []
       ;; Send "trying to connect" message
+      (js/console.log "Sending status message")
       (>! status-channel  (h/attempting-connect-message servers-addresses))
+      (js/console.log "Status message sent")
       
       (let [channels-and-addresses           (get-connection-supply-channels servers-addresses)
+            a (js/console.log "s1")
             connection-channels              (keys channels-and-addresses)
+            a (js/console.log "s2")
             connection-addresses             (vals channels-and-addresses)
+            a (js/console.log "s3")
             [ws-channel successful-channel]  (alts! connection-channels {:priority true}) 
-            address                          (get channels-and-addresses successful-channel)]
+            a (js/console.log "s4")
+            address                          (first (get channels-and-addresses successful-channel))
+            a (js/console.log "s5")]
         
         ;; Don't do anything unless we get a socket
         (when ws-channel
@@ -105,33 +115,51 @@
             ;(js/console.log unused-channels)
             (close-resultant-channels! unused-channels))
           
-          ;; All messages are formated automatically. The format is
-          ;; {:type :a-type, :content "any content"
-          (let [[ws-errors read-from-server] (split #(contains? % :error) ws-channel)
-                write-to-server ws-channel]
+          (let [origin-channel (chan)]
+            (go-loop 
+              []
+              (let [message (<! ws-channel)]
+                (if message
+                  (do
+                    ;(js/console.log "Message received:")
+                    ;(js/console.log message)
+                    (>! origin-channel message)
+                    (recur))
+                  (close! origin-channel))))
             
-            ;; Notify meta channel that connection is successfully established
-            (>! status-channel (h/connection-successful-message address))
-            
-            ;; Message receiver. Dispatches to app-channel.
-            (loop []
-              (let [[message channel] (alts! [read-from-server
-                                              read-from-client
-                                              ws-errors
-                                              command-channel])]
-                (when message 
-                  (condp = channel
-                    read-from-client (>! write-to-server (h/record-to-message message))
-                    read-from-server (>! write-to-client (h/message-to-record message))
-                    ws-errors        (>! status-channel  (h/error-to-record   message))
-                    command-channel  (when (= (:type message)
-                                              (:type h/request-socket-close))
-                                       (close! ws-channel)))
-                  (recur))))
+            ;; All messages are formated automatically. The format is
+            ;; {:type :a-type, :content "any content"
+            (let [[ws-errors read-from-server] (split #(contains? % :error) origin-channel)
+                  write-to-server ws-channel]
+              
+              ;; Notify meta channel that connection is successfully established
+              (>! status-channel (h/connection-successful-message address))
+              
+              ;; Message receiver. Dispatches to app-channel.
+              (loop []
+                (js/console.log "Client loop is waiting for message!")
+                (let [[message channel] (alts! [read-from-server
+                                                read-from-app
+                                                ws-errors
+                                                command-channel])]
+                  (when message
+                    (go 
+                      (condp = channel
+                        read-from-app    (>! write-to-server (h/record-to-message message))
+                        read-from-server (>! write-to-app    (h/message-to-record message))
+                        ws-errors        (do
+                                           (js/console.log "Websocket error:" message)
+                                           (close! ws-channel))
+                        command-channel  (when (= (:type message)
+                                                  (:type h/request-socket-close))
+                                           (close! ws-channel))))
+                    (recur)))))
             
             ;; Notify of read/write loop termination on meta channel
+            (close! ws-channel)
+            (js/console.log "Closing channel on" address)
             (>! status-channel  (h/connection-closed-message address)))))
       (recur))
-    [(h/combine-channels write-to-client read-from-client)
+    [(h/combine-channels write-to-app read-from-app)
      status-channel
      command-channel]))

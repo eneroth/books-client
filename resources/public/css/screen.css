@@ -8,8 +8,13 @@ button {
 
 body {
   font-size: 16px;
-  background-color: #2f2933;
+  background-color: #ECEBF0;
   font-family: sans-serif;
+}
+
+body a {
+  text-decoration: none;
+  color: #0b0b0b;
 }
 
 body ul#search-results {
@@ -21,6 +26,12 @@ body ul#search-results li#search-result {
   margin-top: 15px;
   color: white;
   display: block;
+}
+
+body ul#search-results li#search-result div#authors {
+  font-size: smaller;
+  font-style: italic;
+  color: #636363;
 }
 
 body div#app {
@@ -44,11 +55,11 @@ body div#app div#search-box {
   display: -o-flex;
   display: -ms-flex;
   overflow: hidden;
-  -webkit-box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.45);
-  -moz-box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.45);
-  -o-box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.45);
-  -ms-box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.45);
-  box-shadow: 3px 3px 0px 0px rgba(0,0,0,0.45);
+  -webkit-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
+  -moz-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
+  -o-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
+  -ms-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
+  box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
   -webkit-align-items: stretch;
   -moz-align-items: stretch;
   -o-align-items: stretch;
@@ -82,11 +93,11 @@ body div#app div#search-box input#search-field {
 
 body div#app div#search-box button#search {
   border-style: none;
-  background-color: #cc7e6d;
+  background-color: #8E3557;
   height: 40px;
   width: 64px;
   padding: 0;
   margin: 0;
-  color: #2f2933;
+  color: white;
   font-size: 22px;
 }

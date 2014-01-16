@@ -79,3 +79,6 @@ exit
 (remove 2 [1 2])
 (remove #{2} [1 2])
 exit
+(-main)
+exit
+(-main)

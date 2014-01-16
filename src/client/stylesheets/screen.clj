@@ -18,6 +18,13 @@
 
 (def orange (rgb 204 126 109))
 
+(def zen-and-tea
+  {:dark       (rgb 41 41 41)
+   :dark-teal  (rgb 91 120 118)
+   :dark-green (rgb 143 158 139)
+   :sand       (rgb 242 230 182)
+   :brown      (rgb 65 42 34)})
+
 
 ;; Flex mixin
 (def flex-mixin
@@ -35,8 +42,11 @@
   [:button {:outline "none"}]
   
   [:body {:font-family "sans-serif"
-          :background {:color gray}
+          :background {:color "#ECEBF0"}
           :font-size (px 16)}
+   
+   [:a {:color (rgb 11 11 11)
+        :text-decoration "none"}]
    
    [:ul#search-results 
     {:list-style "none"
@@ -45,7 +55,12 @@
     [:li#search-result
      {:color "white"
       :display "block"
-      :margin {:top (px 15)}}]]
+      :margin {:top (px 15)}}
+     
+     [:div#authors
+      {:color (rgb 99 99 99)
+       :font {:style "italic"
+              :size "smaller"}}]]]
    
    [:div#app 
     {:max-width (px 400)
@@ -67,7 +82,7 @@
       :border {:radius (px 4)}}
      ^:prefix {:align-items "stretch"
                :justify-content "flex-end"
-               :box {:shadow "3px 3px 0px 0px rgba(0,0,0,0.45)"}}
+               :box {:shadow "0px 3px 0px 0px rgba(142,53,87,0.4)"}}
      
      [:input#search-field 
       {:border "none"
@@ -88,8 +103,8 @@
        :width (px 64)
        :padding 0
        :margin 0
-       :color gray
-       :background {:color orange}
+       :color "white"
+       :background {:color "#8E3557"}
        :font {:size (px 22)}
        :border {:style "none"}}]]]])
 

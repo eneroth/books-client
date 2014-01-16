@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Books</title>
 	<meta charset="utf-8">
@@ -20,5 +20,15 @@
 	<script src="js/output/cljs.js"></script>
 	<script type="text/javascript">goog.require("client.core");</script>
 	<script>client.core.main();</script>
+
+	<script src="js/hyphenator/Hyphenator.js"></script>
+	<script>
+		Hyphenator.config({
+			displaytogglebox : false,
+			onerrorhandler : function (e) {},
+			minwordlength : 4
+		});
+		Hyphenator.run();
+	</script>
 </body>
 </html>
