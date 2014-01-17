@@ -55,11 +55,11 @@ body div#app div#search-box {
   display: -o-flex;
   display: -ms-flex;
   overflow: hidden;
-  -webkit-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
-  -moz-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
-  -o-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
-  -ms-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
-  box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.4);
+  -webkit-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.15);
+  -moz-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.15);
+  -o-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.15);
+  -ms-box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.15);
+  box-shadow: 0px 3px 0px 0px rgba(142,53,87,0.15);
   -webkit-align-items: stretch;
   -moz-align-items: stretch;
   -o-align-items: stretch;

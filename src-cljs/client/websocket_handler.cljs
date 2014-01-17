@@ -93,20 +93,13 @@
     (go-loop 
       []
       ;; Send "trying to connect" message
-      (js/console.log "Sending status message")
       (>! status-channel  (h/attempting-connect-message servers-addresses))
-      (js/console.log "Status message sent")
       
       (let [channels-and-addresses           (get-connection-supply-channels servers-addresses)
-            a (js/console.log "s1")
             connection-channels              (keys channels-and-addresses)
-            a (js/console.log "s2")
             connection-addresses             (vals channels-and-addresses)
-            a (js/console.log "s3")
             [ws-channel successful-channel]  (alts! connection-channels {:priority true}) 
-            a (js/console.log "s4")
-            address                          (first (get channels-and-addresses successful-channel))
-            a (js/console.log "s5")]
+            address                          (first (get channels-and-addresses successful-channel))]
         
         ;; Don't do anything unless we get a socket
         (when ws-channel
@@ -137,7 +130,6 @@
               
               ;; Message receiver. Dispatches to app-channel.
               (loop []
-                (js/console.log "Client loop is waiting for message!")
                 (let [[message channel] (alts! [read-from-server
                                                 read-from-app
                                                 ws-errors

@@ -42,8 +42,8 @@
     [item owner]
     (om/component 
       (let [title   (:title item)
-            url     (:url item)
-            authors (apply str (interpose ", " (:author item)))]
+            url     (:info-link item)
+            authors (apply str (interpose ", " (:authors item)))]
         (html 
           [:li#search-result
            [:a#book-amazon-link.hyphenate {:href url} title]
@@ -109,8 +109,9 @@
 
 (defn run
   []
-  (let [[heartbeat-channel      rest-channel] (split #(h/has-type % :heartbeat)      app-channel)
-        [search-results-channel rest-channel] (split #(h/has-type % :search-results) rest-channel)
+  (let [[heartbeat-channel rest-channel] (split #(h/has-type % :heartbeat)      app-channel)
+        [google-channel    rest-channel] (split #(h/has-type % :google-results) rest-channel)
+        [amazon-channel    rest-channel] (split #(h/has-type % :amazon-results) rest-channel)
         ;clicks-channel                        (h/listen (goog.dom/getElement "send") "click")
         ;fake-errors-channel                   (h/listen (goog.dom/getElement "fake-error") "click")
         search-init-events                    (h/clean-mix (h/listen (goog.dom/getElement "search") "click")
@@ -170,7 +171,7 @@
               is-enter-key?    (h/pressed-key-is? (:enter h/key-types) search-init-event)
               value            (.-value (goog.dom/getElement "search-field"))
               value-not-empty? (not (= value ""))
-              message          (Message. :search value)]
+              message          (Message. :search-google value)]
           (when 
             (and value-not-empty?
                  (or is-button-click?
@@ -181,10 +182,10 @@
     
     (go-loop
       []
-      (when-let [search-results (:val (<! search-results-channel))]
+      (when-let [search-results (:val (<! google-channel))]
         (let [message (Message. :update-search-results (add-ids search-results))]
           (log "Received search results!")
-          ;(log (pr-str search-results))
+          (log (pr-str search-results))
           (>! om-channel message)
           (recur))))))
 

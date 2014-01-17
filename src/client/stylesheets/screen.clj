@@ -82,7 +82,7 @@
       :border {:radius (px 4)}}
      ^:prefix {:align-items "stretch"
                :justify-content "flex-end"
-               :box {:shadow "0px 3px 0px 0px rgba(142,53,87,0.4)"}}
+               :box {:shadow "0px 3px 0px 0px rgba(142,53,87,0.15)"}}
      
      [:input#search-field 
       {:border "none"

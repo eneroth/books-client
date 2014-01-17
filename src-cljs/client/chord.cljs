@@ -98,13 +98,13 @@
           0 (recur)
           1 (recur)
           2 (do
-              (log "Websocket connection to " ws-url " closing. Closing channels tied to socket.")
+              (log "Websocket connection to" ws-url "closing. Closing channels tied to socket.")
               (close! read-ch)
               (close! write-ch)
               (close! combined-ch)
               (close! socket-ch))
           3 (do
-              (log "Websocket connection to " ws-url " closed. Closing channels tied to socket.")
+              (log "Websocket connection to" ws-url "closed. Closing channels tied to socket.")
               (close! read-ch)
               (close! write-ch)
               (close! combined-ch)
