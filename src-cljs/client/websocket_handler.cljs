@@ -8,8 +8,7 @@
 
 ;; Address to host
 (def servers-addresses ["ws://localhost:5000"
-                        "ws://books-server.herokuapp.com"
-                        "ws://tree-mind-tone.herokuapp.com"])
+                        "ws://bs1.dikoto.com"])
 
 (defn get-connection-supply-channels
   "Returns a vector of tuples, one for every
