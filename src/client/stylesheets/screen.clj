@@ -19,11 +19,11 @@
 (def orange (rgb 204 126 109))
 
 (def zen-and-tea
-  {:dark       (rgb 41 41 41)
-   :dark-teal  (rgb 91 120 118)
+  {:dark       (rgb  41  41  41)
+   :dark-teal  (rgb  91 120 118)
    :dark-green (rgb 143 158 139)
    :sand       (rgb 242 230 182)
-   :brown      (rgb 65 42 34)})
+   :brown      (rgb  65  42  34)})
 
 
 ;; Flex mixin
@@ -44,7 +44,7 @@
   [:body {:font-family "sans-serif"
           :background {:color "#ECEBF0"
                        :image "url('../img/bg.png')"}
-          :font-size (px 16)}
+          :font-size (px 18)}
    
    [:a {:color (rgb 11 11 11)
         :text-decoration "none"}]
@@ -72,7 +72,7 @@
               :right "auto"}
      :padding (px 20)}
     
-
+    
     
     [:div#search-box 
      {:max-width (px 400)
@@ -86,7 +86,7 @@
       :border {:radius (px 4)}}
      ^:prefix {:align-items "stretch"
                :justify-content "flex-end"
-               :box {:shadow "0px 3px 0px 0px #D7CBC1"}}
+               :box {:shadow "0px 2px 0px 0px #D7CBC1"}}
      
      [:input#search-field 
       {:border "none"
@@ -96,9 +96,9 @@
                 :bottom 0
                 :top    0}
        :padding {:left   (px 10)
-                :right  0
-                :bottom 0
-                :top    (px 0)}
+                 :right  0
+                 :bottom 0
+                 :top    (px 0)}
        :font {:size (px 22)}}
       ^:prefix {:flex-grow 1}]
      

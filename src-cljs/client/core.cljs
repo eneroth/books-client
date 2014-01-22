@@ -14,6 +14,11 @@
 (def app-state
   (atom {:search-results nil}))
 
+
+(defn set-search-results
+  [value]
+  (om/update! app-state assoc :search-results value))
+
 (def om-channel (chan))
 
 ;; Om widgets
@@ -53,10 +58,14 @@
     [state owner]
     (let [search-results (:search-results state)]
       (om/component
-        (if (and (empty? search-results)
+        (cond (= search-results :searching)
+              (html 
+                [:div#nothing-found "Searching…"])
+              (and (empty? search-results)
                    (not (nil? search-results)))
               (html 
-                [:div#nothing-found "Sorry, couldn't find any books of that description."])
+                [:div#nothing-found "Sorry, couldn't find any books of that description."])          
+              :else
               (html 
                 [:ul {:id "search-results"}
                  (om/build-all search-item (:search-results state) {:key :id})])))))
@@ -181,7 +190,8 @@
             (and value-not-empty?
                  (or is-button-click?
                      (and is-key-press-up?
-                          is-enter-key?)))                  
+                          is-enter-key?)))
+            (>! om-channel (Message. :update-search-results :searching))                  
             (>! app-channel message))
           (recur))))
     
