@@ -62,6 +62,9 @@
        :font {:style "italic"
               :size "smaller"}}]]]
    
+   [:div#nothing-found
+    {:margin {:top (px 20)}}]
+   
    [:div#app 
     {:max-width (px 400)
      :margin {:left  "auto"

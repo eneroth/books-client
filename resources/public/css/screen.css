@@ -34,6 +34,10 @@ body ul#search-results li#search-result div#authors {
   color: #636363;
 }
 
+body div#nothing-found {
+  margin-top: 20px;
+}
+
 body div#app {
   padding: 20px;
   margin-left: auto;

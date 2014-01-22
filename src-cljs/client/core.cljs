@@ -12,7 +12,7 @@
 
 ;; Om constructs
 (def app-state
-  (atom {:search-results []}))
+  (atom {:search-results nil}))
 
 (def om-channel (chan))
 
@@ -53,8 +53,13 @@
     [state owner]
     (let [search-results (:search-results state)]
       (om/component
-        (html [:ul {:id "search-results"}
-               (om/build-all search-item (:search-results state) {:key :id})]))))
+        (if (and (empty? search-results)
+                   (not (nil? search-results)))
+              (html 
+                [:div#nothing-found "Sorry, couldn't find any books of that description."])
+              (html 
+                [:ul {:id "search-results"}
+                 (om/build-all search-item (:search-results state) {:key :id})])))))
   
   
   (defn app [state owner]
