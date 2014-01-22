@@ -42,7 +42,8 @@
   [:button {:outline "none"}]
   
   [:body {:font-family "sans-serif"
-          :background {:color "#ECEBF0"}
+          :background {:color "#ECEBF0"
+                       :image "url('../img/bg.png')"}
           :font-size (px 16)}
    
    [:a {:color (rgb 11 11 11)
@@ -85,7 +86,7 @@
       :border {:radius (px 4)}}
      ^:prefix {:align-items "stretch"
                :justify-content "flex-end"
-               :box {:shadow "0px 3px 0px 0px rgba(142,53,87,0.15)"}}
+               :box {:shadow "0px 3px 0px 0px #D7CBC1"}}
      
      [:input#search-field 
       {:border "none"
@@ -107,7 +108,7 @@
        :padding 0
        :margin 0
        :color "white"
-       :background {:color "#8E3557"}
+       :background {:color "#DE794F"}
        :font {:size (px 22)}
        :border {:style "none"}}]]]])
 

@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.logging "0.2.6"]
                  [http-kit "2.1.13"]
-                 [om "0.1.4"]
+                 [om "0.2.3"]
                  [sablono "0.1.3"]
                  [garden "1.1.4"]
                  [org.clojure/data.fressian "0.2.0"]
