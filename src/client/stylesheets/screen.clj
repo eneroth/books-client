@@ -49,14 +49,26 @@
    [:a {:color (rgb 11 11 11)
         :text-decoration "none"}]
    
+   [:img#thumbnail
+    {:display "inline-block"
+     :width (px 50)}]
+   
+   [:div#item-info
+    {:display "inline-block"
+     :width (px 0)
+     :margin {:right (px 20)}}
+    ^:prefix {:flex-grow 1}]
+
+   
    [:ul#search-results 
     {:list-style "none"
      :padding 0}
     
     [:li#search-result
-     {:color "white"
-      :display "block"
+     {:display flex-mixin
       :margin {:top (px 15)}}
+      ^:prefix {:align-items "flex-start"
+                :justify-content "flex-end"}
      
      [:div#authors
       {:color (rgb 99 99 99)

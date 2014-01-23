@@ -46,13 +46,15 @@
   (defn search-item
     [item owner]
     (om/component 
-      (let [title   (:title item)
-            url     (:info-link item)
-            authors (apply str (interpose ", " (:authors item)))]
+      (let [title     (:title item)
+            url       (:info-link item)
+            thumbnail (-> item :image-links :thumbnail)
+            authors   (apply str (interpose ", " (:authors item)))]
         (html 
           [:li#search-result
-           [:a#book-amazon-link.hyphenate {:href url} title]
-           [:div#authors authors]]))))
+           [:div#item-info
+            [:a#book-link.hyphenate {:href url} title]
+            [:div#authors authors]]]))))
   
   (defn results-widget
     [state owner]
